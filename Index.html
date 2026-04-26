@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Tim Automações — Demonstração</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+
+:root{
+  --bg:#f5f4f1;
+  --surface:#ffffff;
+  --surface2:#f0ede8;
+  --texto:#1c1c1c;
+  --texto2:#6b6b6b;
+  --borda:#e0dbd4;
+  --primaria:#e8640a;
+  --primaria2:#f07830;
+  --primaria-bg:#fff3ec;
+  --primaria-borda:#f5c4a0;
+  --verde:#1a6b3a;
+  --verde-wa:#25D366;
+  --verde-wa-dark:#128C7E;
+  --verde-wa-bg:#DCF8C6;
+  --sucesso-bg:#eaf3de;
+  --sucesso-borda:#c0dd97;
+  --preto:#0a0a0a;
+  --sombra:0 2px 16px rgba(0,0,0,0.08);
+  --sombra-lg:0 8px 40px rgba(0,0,0,0.14);
+}
+
+html, body{
+  width:100%;
+  margin:0;padding:0;
+  font-family:'DM Sans',sans-serif;
+  background:var(--preto);
+  overflow:hidden;
+  /* dvh: funciona em iOS Safari + Android Chrome + Firefox modernos */
+  height:100vh;
+  height:100dvh;
+}
+
+/* ===================== CENAS ===================== */
+.scene{
+  position:fixed;top:0;right:0;bottom:0;left:0;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;
+  transition:opacity 0.7s ease;
+}
+.scene.active{opacity:1;pointer-events:auto;}
+
+/* ===================== BARRA DE PROGRESSO ===================== */
+.progress-bar{
+  position:fixed;top:0;left:0;height:3px;
+  background:var(--primaria);
+  transition:width 0.8s ease;
+  z-index:999;width:0%;
+  box-shadow:0 0 8px rgba(232,100,10,0.5);
+}
+
+/* BOTÃO SKIP */
+.skip-btn{
+  position:fixed;top:16px;right:16px;z-index:998;
+  font-size:12px;color:rgba(255,255,255,0.4);
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:20px;padding:6px 16px;cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+  transition:all 0.2s;letter-spacing:0.5px;
+}
+.skip-btn:hover{color:rgba(255,255,255,0.7);background:rgba(255,255,255,0.12);}
+
+/* DOTS */
+.dots{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  display:flex;gap:8px;z-index:998;
+}
+.dot{
+  width:6px;height:6px;border-radius:3px;
+  background:rgba(255,255,255,0.2);
+  transition:all 0.3s;cursor:pointer;
+}
+.dot.active{width:22px;background:var(--primaria);}
+
+/* ===================== CENA 1: INTRO ===================== */
+#scene-intro{
+  background:var(--preto);
+  flex-direction:column;
+  overflow:hidden;
+}
+
+.intro-bg{
+  position:absolute;top:0;right:0;bottom:0;left:0;
+  background:radial-gradient(ellipse 70% 50% at 50% 55%, rgba(232,100,10,0.12) 0%, transparent 70%);
+}
+
+.intro-grid{
+  position:absolute;top:0;right:0;bottom:0;left:0;
+  background-image:
+    linear-gradient(rgba(232,100,10,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(232,100,10,0.05) 1px, transparent 1px);
+  background-size:50px 50px;
+  animation:gridMove 25s linear infinite;
+}
+@keyframes gridMove{
+  0%{transform:translate(0,0);}
+  100%{transform:translate(50px,50px);}
+}
+
+.intro-content{
+  position:relative;z-index:2;
+  text-align:center;padding:40px 32px;
+  display:flex;flex-direction:column;align-items:center;
+}
+
+.intro-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  border:1px solid rgba(232,100,10,0.35);
+  color:var(--primaria);
+  font-size:11px;letter-spacing:3px;text-transform:uppercase;
+  padding:8px 20px;border-radius:100px;margin-bottom:36px;
+  opacity:0;animation:fadeUp 0.8s ease 0.4s forwards;
+  background:rgba(232,100,10,0.06);
+}
+
+.intro-dot{width:6px;height:6px;background:var(--primaria);border-radius:50%;animation:blink 1.2s ease infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+
+.intro-title{
+  font-family:'Syne',sans-serif;
+  font-size:clamp(44px,10vw,96px);
+  color:#fff;
+  line-height:0.92;
+  letter-spacing:-1px;
+  opacity:0;animation:fadeUp 0.9s ease 0.7s forwards;
+}
+.intro-title .laranja{color:var(--primaria);}
+.intro-title .dim{color:rgba(255,255,255,0.25);}
+
+.intro-sub{
+  font-size:clamp(13px,2vw,17px);
+  color:rgba(255,255,255,0.4);
+  margin-top:24px;font-weight:400;
+  letter-spacing:0.5px;line-height:1.6;
+  max-width:420px;
+  opacity:0;animation:fadeUp 0.8s ease 1s forwards;
+}
+
+.intro-divider{
+  width:1px;height:0;margin:36px auto 0;
+  background:linear-gradient(to bottom,var(--primaria),transparent);
+  animation:lineGrow 1s ease 1.5s forwards;
+}
+@keyframes lineGrow{to{height:56px;}}
+
+.intro-cta{
+  margin-top:56px;font-size:12px;
+  color:rgba(255,255,255,0.25);letter-spacing:2px;text-transform:uppercase;
+  opacity:0;animation:fadeIn 0.5s ease 2s forwards, ctaPulse 2.5s ease 2s infinite;
+}
+@keyframes ctaPulse{0%,100%{opacity:0.25;}50%{opacity:0.6;}}
+
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(16px);}
+  to{opacity:1;transform:translateY(0);}
+}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+
+/* ===================== CENA 2: PROBLEMA ===================== */
+#scene-problem{
+  background:#0f0f0f;
+  flex-direction:column;
+  padding:48px 32px;
+  align-items:center;
+}
+
+.problem-eyebrow{
+  font-size:11px;letter-spacing:3px;color:var(--primaria);
+  text-transform:uppercase;margin-bottom:28px;opacity:0;
+}
+
+.problem-title{
+  font-family:'Syne',sans-serif;
+  font-size:clamp(28px,6vw,56px);
+  color:#fff;text-align:center;line-height:1;
+  opacity:0;transform:translateY(12px);
+  max-width:520px;
+}
+.problem-title span{color:rgba(255,255,255,0.3);}
+
+.problem-cards{
+  margin-top:44px;
+  display:flex;flex-direction:column;gap:12px;
+  width:100%;max-width:480px;
+}
+
+.problem-card{
+  display:flex;align-items:flex-start;gap:16px;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.06);
+  border-radius:14px;padding:18px 20px;
+  opacity:0;transform:translateX(-16px);
+}
+.problem-card-icon{
+  width:40px;height:40px;flex-shrink:0;
+  background:rgba(232,100,10,0.1);border:1px solid rgba(232,100,10,0.2);
+  border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:20px;
+}
+.problem-card-text{flex:1;}
+.problem-card-title{font-size:14px;font-weight:600;color:#fff;margin-bottom:3px;}
+.problem-card-sub{font-size:12px;color:rgba(255,255,255,0.4);line-height:1.4;}
+
+/* ===================== CENA 3: CHAT ===================== */
+#scene-chat{
+  background:#111;
+  flex-direction:column;
+  gap:0;
+  padding:20px 0;
+}
+
+.chat-eyebrow{
+  font-size:11px;letter-spacing:2.5px;
+  color:rgba(255,255,255,0.3);text-transform:uppercase;
+  margin-bottom:18px;opacity:0;
+}
+
+/* CELULAR */
+.phone{
+  width:80vw;max-width:300px;
+  background:#1a1a1a;
+  border-radius:42px;padding:9px;
+  box-shadow:
+    0 0 0 1px #252525,
+    0 30px 70px rgba(0,0,0,0.75),
+    0 0 50px rgba(232,100,10,0.06);
+  opacity:0;transform:translateY(16px);
+  transition:opacity 0.6s ease, transform 0.6s ease;
+}
+.phone.visible{opacity:1;transform:translateY(0);}
+
+.phone-inner{
+  background:#e5ddd5;
+  border-radius:34px;
+  overflow:hidden;
+  height:68vh;max-height:520px;
+  display:flex;flex-direction:column;
+  background-image:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23b5a898' fill-opacity='0.1'%3E%3Cpath d='M20 20c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10zm10 0c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10z'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* WA HEADER */
+.wa-header{
+  background:var(--verde-wa-dark);
+  padding:10px 14px;
+  display:flex;align-items:center;gap:10px;
+}
+.wa-back{color:rgba(255,255,255,0.65);font-size:18px;}
+.wa-avatar{
+  width:34px;height:34px;
+  background:var(--verde-wa);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+}
+.wa-info{flex:1;}
+.wa-name{color:#fff;font-size:13px;font-weight:600;}
+.wa-status{color:rgba(255,255,255,0.6);font-size:10px;}
+.wa-icons{display:flex;gap:14px;color:rgba(255,255,255,0.7);font-size:16px;}
+
+/* MSGS */
+.wa-msgs{
+  flex:1;overflow-y:auto;
+  padding:8px 10px 4px;
+  display:flex;flex-direction:column;gap:4px;
+  scrollbar-width:none;
+}
+.wa-msgs::-webkit-scrollbar{display:none;}
+
+.msg{
+  max-width:80%;
+  padding:7px 10px 5px;
+  border-radius:8px;
+  font-size:12px;line-height:1.5;
+  opacity:0;transform:translateY(6px) scale(0.97);
+  transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  word-break:break-word;
+}
+.msg.show{opacity:1;transform:translateY(0) scale(1);}
+
+.msg.cliente{
+  background:#fff;
+  align-self:flex-end;
+  border-radius:8px 2px 8px 8px;
+  box-shadow:0 1px 2px rgba(0,0,0,0.1);
+  color:#1a1a1a;
+}
+.msg.bot{
+  background:var(--verde-wa-bg);
+  align-self:flex-start;
+  border-radius:2px 8px 8px 8px;
+  box-shadow:0 1px 2px rgba(0,0,0,0.08);
+  color:#1a1a1a;
+}
+.msg-time{
+  font-size:10px;color:rgba(0,0,0,0.35);
+  float:right;margin-left:8px;margin-top:1px;
+}
+
+/* TYPING */
+.typing{
+  display:none;align-self:flex-start;
+  background:var(--verde-wa-bg);
+  padding:10px 14px;border-radius:2px 8px 8px 8px;
+  gap:4px;align-items:center;
+  box-shadow:0 1px 2px rgba(0,0,0,0.08);
+}
+.typing.show{display:flex;}
+.typing span{
+  width:7px;height:7px;background:rgba(0,0,0,0.3);
+  border-radius:50%;
+  animation:typingDot 1.2s ease infinite;
+}
+.typing span:nth-child(2){animation-delay:0.15s;}
+.typing span:nth-child(3){animation-delay:0.3s;}
+@keyframes typingDot{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-5px);}}
+
+/* WA INPUT */
+.wa-input{
+  background:#f0f0f0;
+  padding:8px 10px;
+  display:flex;align-items:center;gap:8px;
+}
+.wa-input-box{
+  flex:1;background:#fff;border-radius:20px;
+  padding:8px 14px;font-size:12px;color:#999;
+}
+.wa-mic{
+  width:34px;height:34px;background:var(--verde-wa);
+  border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:15px;flex-shrink:0;
+}
+
+/* CAPTION */
+.chat-caption{
+  margin-top:16px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:10px;padding:10px 16px;
+  font-size:12px;color:rgba(255,255,255,0.6);
+  text-align:center;max-width:80vw;max-width:300px;
+  opacity:0;transform:translateY(6px);
+  transition:all 0.4s ease;line-height:1.5;
+}
+.chat-caption.show{opacity:1;transform:translateY(0);}
+.chat-caption strong{color:#fff;}
+
+/* ===================== CENA 4: PAINEL ===================== */
+#scene-panel{
+  background:#0a0a0a;
+  flex-direction:column;
+  padding:20px 20px;
+  align-items:center;
+}
+
+.panel-eyebrow{
+  font-size:11px;letter-spacing:2.5px;
+  color:rgba(255,255,255,0.3);text-transform:uppercase;
+  margin-bottom:18px;opacity:0;
+}
+
+.phone-panel{
+  width:80vw;max-width:300px;
+  background:#1a1a1a;
+  border-radius:42px;padding:9px;
+  box-shadow:
+    0 0 0 1px #252525,
+    0 30px 70px rgba(0,0,0,0.75),
+    0 0 50px rgba(232,100,10,0.07);
+  opacity:0;transform:translateY(16px);
+  transition:opacity 0.6s ease, transform 0.6s ease;
+}
+.phone-panel.visible{opacity:1;transform:translateY(0);}
+
+.panel-inner{
+  background:var(--bg);
+  border-radius:34px;
+  overflow:hidden;
+  height:68vh;max-height:520px;
+  display:flex;flex-direction:column;
+  font-family:'DM Sans',sans-serif;
+}
+
+/* HEADER PAINEL */
+.panel-header{
+  background:#f8f8f8;
+  border-bottom:1px solid var(--borda);
+  padding:10px 14px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.ph-logo{font-size:12px;font-weight:600;color:var(--texto);}
+.ph-sub{font-size:9px;color:var(--texto2);}
+.ph-stats{display:flex;gap:6px;}
+.ph-stat{
+  background:var(--primaria-bg);border:1px solid var(--primaria-borda);
+  border-radius:6px;padding:3px 8px;text-align:center;
+}
+.ph-stat-num{font-size:13px;font-weight:700;color:var(--primaria);}
+.ph-stat-label{font-size:8px;color:var(--texto2);display:block;}
+
+/* CONTEÚDO DO PAINEL */
+.panel-content{
+  flex:1;overflow-y:auto;padding:12px 12px;
+  scrollbar-width:none;
+  background:var(--bg);
+}
+.panel-content::-webkit-scrollbar{display:none;}
+
+/* CARD PAINEL */
+.p-card{
+  background:#fff;border:1px solid var(--borda);
+  border-radius:12px;padding:12px 14px;margin-bottom:10px;
+  box-shadow:0 1px 8px rgba(0,0,0,0.06);
+  opacity:0;transform:translateY(10px);
+  transition:all 0.4s ease;
+}
+.p-card.show{opacity:1;transform:translateY(0);}
+
+.p-card-titulo{font-size:9px;font-weight:600;color:var(--texto2);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;}
+
+/* Pedido card */
+.p-pedido{
+  display:flex;justify-content:space-between;align-items:flex-start;
+}
+.p-pedido-nome{font-size:13px;font-weight:600;color:var(--texto);}
+.p-pedido-det{font-size:11px;color:var(--texto2);margin-top:2px;line-height:1.4;}
+.p-pedido-val{font-size:14px;font-weight:700;color:var(--primaria);}
+.p-pedido-hora{font-size:10px;color:var(--texto2);text-align:right;margin-top:2px;}
+
+.p-badge{
+  display:inline-block;padding:2px 7px;border-radius:8px;
+  font-size:9px;font-weight:600;margin-top:4px;
+}
+.p-badge-wpp{background:var(--sucesso-bg);color:var(--verde);border:1px solid var(--sucesso-borda);}
+.p-badge-balcao{background:var(--primaria-bg);color:var(--primaria);border:1px solid var(--primaria-borda);}
+
+/* Status */
+.p-status{
+  background:#eaf3de;border:2px solid #5a9e30;
+  border-radius:12px;padding:14px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.p-status-info{flex:1;}
+.p-status-titulo{font-size:14px;font-weight:700;color:#1a5c00;}
+.p-status-sub{font-size:11px;color:#3a7a20;margin-top:2px;}
+.p-status-icon{font-size:28px;}
+
+/* Stats row */
+.p-stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;}
+.p-stat-card{
+  background:#fff;border:1px solid var(--borda);border-radius:10px;
+  padding:10px 8px;text-align:center;
+}
+.p-stat-num{font-size:16px;font-weight:700;color:var(--primaria);}
+.p-stat-label{font-size:9px;color:var(--texto2);margin-top:1px;}
+
+/* NAV PAINEL */
+.panel-nav{
+  background:#f8f8f8;
+  border-top:1px solid var(--borda);
+  display:flex;padding:6px 0 8px;
+}
+.pn-item{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;gap:2px;font-size:9px;
+  color:var(--texto2);font-weight:500;
+}
+.pn-item.ativo{color:var(--primaria);}
+.pn-icon{font-size:17px;line-height:1;}
+
+.panel-caption{
+  margin-top:16px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:10px;padding:10px 16px;
+  font-size:12px;color:rgba(255,255,255,0.6);
+  text-align:center;max-width:80vw;max-width:300px;
+  opacity:0;transform:translateY(6px);
+  transition:all 0.4s ease;line-height:1.5;
+}
+.panel-caption.show{opacity:1;transform:translateY(0);}
+.panel-caption strong{color:#fff;}
+
+/* ===================== CENA 5: TICKET ===================== */
+#scene-ticket{
+  background:#0d0d0d;
+  flex-direction:column;
+  padding:20px;
+  align-items:center;
+}
+
+.ticket-eyebrow{
+  font-size:11px;letter-spacing:2.5px;
+  color:rgba(255,255,255,0.3);text-transform:uppercase;
+  margin-bottom:18px;opacity:0;
+}
+
+/* Impressora */
+.printer-wrap{
+  display:flex;flex-direction:column;align-items:center;
+  opacity:0;transform:scale(0.9);
+  transition:all 0.6s ease;
+}
+.printer-wrap.visible{opacity:1;transform:scale(1);}
+
+.printer-body{
+  width:52vw;max-width:200px;
+  background:linear-gradient(to bottom,#2e2e2e,#1e1e1e);
+  border-radius:12px;
+  padding:12px 16px 14px;
+  box-shadow:0 8px 30px rgba(0,0,0,0.6), 0 0 0 1px #383838;
+  position:relative;
+  z-index:2;
+}
+.printer-brand{
+  font-size:9px;color:rgba(255,255,255,0.18);
+  letter-spacing:3px;text-align:center;
+  margin-bottom:10px;text-transform:uppercase;
+}
+.printer-slot{
+  height:6px;background:#111;border-radius:3px;
+  box-shadow:inset 0 2px 4px rgba(0,0,0,0.8);
+  margin-bottom:10px;
+}
+.printer-leds{display:flex;justify-content:center;gap:8px;}
+.printer-led{
+  width:7px;height:7px;border-radius:50%;
+  background:#2a2a2a;
+  transition:background 0.3s, box-shadow 0.3s;
+}
+.printer-led.on{background:#00e676;box-shadow:0 0 8px #00e676;}
+.printer-led.amber{background:#2a2a2a;}
+.printer-led.amber.on{background:#ffa000;box-shadow:0 0 8px #ffa000;}
+
+/* Papel saindo abaixo da impressora */
+.printer-paper-wrap{
+  width:46vw;max-width:176px;
+  overflow:hidden;
+  max-height:0;
+  transition:max-height 1.4s cubic-bezier(0.4,0,0.2,1);
+  background:#fff;
+  border-radius:0 0 4px 4px;
+  box-shadow:2px 6px 20px rgba(0,0,0,0.35);
+  position:relative;
+  z-index:1;
+}
+.printer-paper-wrap.printing{max-height:260px;}
+
+/* Conteúdo do ticket */
+.ticket-content{
+  padding:10px 12px;
+  font-family:'Courier New',monospace;
+  font-size:10px;color:#111;
+  line-height:1.5;
+}
+.t-rest{text-align:center;font-size:12px;font-weight:700;border-bottom:1px dashed #ddd;padding-bottom:8px;margin-bottom:6px;}
+.t-pedido-num{text-align:center;font-size:9px;color:#999;margin-bottom:6px;}
+.t-lbl{font-size:8px;color:#999;text-align:center;margin-top:4px;}
+.t-caixa{background:#111;color:white;font-weight:700;text-align:center;padding:4px 6px;border-radius:2px;letter-spacing:1px;margin:3px 0;font-size:10px;}
+.t-row{display:flex;justify-content:space-between;font-size:10px;margin:3px 0;}
+.t-div{border:none;border-top:1px dashed #ddd;margin:6px 0;}
+.t-total{font-weight:700;font-size:11px;}
+.t-footer-ticket{text-align:center;font-size:8px;color:#aaa;margin-top:6px;padding-top:6px;border-top:1px dashed #eee;}
+
+.ticket-caption{
+  margin-top:20px;
+  text-align:center;max-width:280px;width:80vw;
+  opacity:0;transform:translateY(6px);
+  transition:all 0.4s ease;
+}
+.ticket-caption.show{opacity:1;transform:translateY(0);}
+.ticket-caption strong{display:block;font-size:15px;color:#fff;margin-bottom:6px;}
+.ticket-caption span{font-size:12px;color:rgba(255,255,255,0.4);line-height:1.6;}
+
+/* ===================== CENA 6: FINAL ===================== */
+#scene-final{
+  background:var(--preto);
+  flex-direction:column;
+  overflow:hidden;
+  padding:40px 24px;
+}
+
+.final-bg{
+  position:absolute;top:0;right:0;bottom:0;left:0;
+  background:radial-gradient(ellipse 60% 50% at 50% 60%, rgba(232,100,10,0.1) 0%, transparent 70%);
+}
+
+.final-content{
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;
+  align-items:center;text-align:center;
+  max-width:440px;
+}
+
+.final-icon{font-size:48px;opacity:0;transform:scale(0.7);transition:all 0.6s cubic-bezier(0.34,1.56,0.64,1);}
+.final-icon.show{opacity:1;transform:scale(1);}
+
+.final-title{
+  font-family:'Syne',sans-serif;
+  font-size:clamp(34px,7vw,64px);
+  color:#fff;line-height:0.95;
+  letter-spacing:-1px;
+  margin-top:20px;
+  opacity:0;transform:translateY(16px);
+  transition:all 0.7s ease;
+}
+.final-title.show{opacity:1;transform:translateY(0);}
+.final-title .laranja{color:var(--primaria);}
+.final-title .dim{color:rgba(255,255,255,0.2);}
+
+.final-sub{
+  font-size:14px;color:rgba(255,255,255,0.4);
+  margin-top:16px;line-height:1.6;
+  opacity:0;transition:all 0.7s ease 0.15s;
+  max-width:340px;
+}
+.final-sub.show{opacity:1;}
+
+.final-pills{
+  display:flex;flex-wrap:wrap;justify-content:center;
+  gap:8px;margin-top:24px;
+  opacity:0;transition:all 0.7s ease 0.3s;
+}
+.final-pills.show{opacity:1;}
+
+.pill{
+  padding:8px 16px;border-radius:100px;
+  font-size:13px;font-weight:500;
+}
+.pill-orange{background:var(--primaria);color:#fff;}
+.pill-outline{
+  border:1px solid rgba(255,255,255,0.15);
+  color:rgba(255,255,255,0.6);
+  background:rgba(255,255,255,0.04);
+}
+
+.final-cta{
+  margin-top:28px;
+  opacity:0;transition:all 0.7s ease 0.45s;
+}
+.final-cta.show{opacity:1;}
+
+.btn-restart{
+  padding:13px 28px;
+  background:transparent;
+  border:1.5px solid rgba(255,255,255,0.15);
+  border-radius:100px;
+  font-size:13px;font-weight:500;
+  color:rgba(255,255,255,0.5);
+  cursor:pointer;font-family:'DM Sans',sans-serif;
+  transition:all 0.2s;letter-spacing:0.5px;
+}
+.btn-restart:hover{border-color:var(--primaria);color:var(--primaria);}
+
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<button class="skip-btn" id="skipBtn" onclick="goToScene(5)">Pular →</button>
+<div class="dots" id="dotsContainer">
+  <div class="dot active" onclick="goToScene(0)"></div>
+  <div class="dot" onclick="goToScene(1)"></div>
+  <div class="dot" onclick="goToScene(2)"></div>
+  <div class="dot" onclick="goToScene(3)"></div>
+  <div class="dot" onclick="goToScene(4)"></div>
+  <div class="dot" onclick="goToScene(5)"></div>
+</div>
+
+<!-- ===== CENA 1: INTRO ===== -->
+<div class="scene active" id="scene-intro" onclick="goToScene(1)">
+  <div class="intro-bg"></div>
+  <div class="intro-grid"></div>
+  <div class="intro-content">
+    <div class="intro-badge">
+      <span class="intro-dot"></span>
+      Tim Automações
+    </div>
+    <div class="intro-title">
+      SEU<br>
+      <span class="laranja">RESTAURANTE</span><br>
+      <span class="dim">NO PILOTO</span><br>
+      AUTOMÁTICO
+    </div>
+    <div class="intro-sub">
+      Atendimento via WhatsApp com IA.<br>
+      24 horas por dia. Sem tocar no celular.
+    </div>
+    <div class="intro-divider"></div>
+    <div class="intro-cta">toque para ver como funciona</div>
+  </div>
+</div>
+
+<!-- ===== CENA 2: PROBLEMA ===== -->
+<div class="scene" id="scene-problem">
+  <div class="problem-eyebrow" id="p-eyebrow">O problema de hoje</div>
+  <div class="problem-title" id="p-title">Seu WhatsApp <span>nunca para</span></div>
+  <div class="problem-cards" id="p-cards">
+    <div class="problem-card" id="pc1">
+      <div class="problem-card-icon">😓</div>
+      <div class="problem-card-text">
+        <div class="problem-card-title">Responder à mão, o dia todo</div>
+        <div class="problem-card-sub">Cliente manda mensagem às 22h e fica sem resposta até de manhã</div>
+      </div>
+    </div>
+    <div class="problem-card" id="pc2">
+      <div class="problem-card-icon">❌</div>
+      <div class="problem-card-text">
+        <div class="problem-card-title">Pedido anotado errado</div>
+        <div class="problem-card-sub">Na correria do almoço, um item trocado gera retrabalho e reclamação</div>
+      </div>
+    </div>
+    <div class="problem-card" id="pc3">
+      <div class="problem-card-icon">📵</div>
+      <div class="problem-card-text">
+        <div class="problem-card-title">Sem controle dos pedidos</div>
+        <div class="problem-card-sub">Pedidos perdidos no meio das mensagens, sem historico e sem relatorio do dia</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CENA 3: CHAT ===== -->
+<div class="scene" id="scene-chat">
+  <div class="chat-eyebrow" id="chatEyebrow">Veja na prática</div>
+  <div class="phone" id="phone">
+    <div class="phone-inner">
+      <div class="wa-header">
+        <div class="wa-back">‹</div>
+        <div class="wa-avatar">🍱</div>
+        <div class="wa-info">
+          <div class="wa-name">Marmitaria Tim</div>
+          <div class="wa-status">online</div>
+        </div>
+        <div class="wa-icons">📞 ⋮</div>
+      </div>
+      <div class="wa-msgs" id="msgs">
+        <div class="typing" id="typing">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+      <div class="wa-input">
+        <div class="wa-input-box">Mensagem</div>
+        <div class="wa-mic">🎤</div>
+      </div>
+    </div>
+  </div>
+  <div class="chat-caption" id="chatCaption"></div>
+</div>
+
+<!-- ===== CENA 4: PAINEL ===== -->
+<div class="scene" id="scene-panel">
+  <div class="panel-eyebrow" id="panelEyebrow">Painel do balcão</div>
+  <div class="phone-panel" id="phonePanel">
+    <div class="panel-inner">
+      <div class="panel-header">
+        <div>
+          <div class="ph-logo">Marmitaria Tim</div>
+          <div class="ph-sub">Sabado, 25 de abril</div>
+        </div>
+        <div class="ph-stats">
+          <div class="ph-stat">
+            <div class="ph-stat-num" id="panelCount">0</div>
+            <span class="ph-stat-label">pedidos</span>
+          </div>
+          <div class="ph-stat">
+            <div class="ph-stat-num" id="panelTotal">R$0</div>
+            <span class="ph-stat-label">hoje</span>
+          </div>
+        </div>
+      </div>
+      <div class="panel-content" id="panelContent">
+
+        <div class="p-stats-row">
+          <div class="p-stat-card"><div class="p-stat-num" id="st1">0</div><div class="p-stat-label">WhatsApp</div></div>
+          <div class="p-stat-card"><div class="p-stat-num" id="st2">0</div><div class="p-stat-label">Balcão</div></div>
+          <div class="p-stat-card"><div class="p-stat-num" id="st3">R$0</div><div class="p-stat-label">Ticket médio</div></div>
+        </div>
+
+        <div class="p-card" id="pcard-status">
+          <div class="p-status">
+            <div class="p-status-info">
+              <div class="p-status-titulo">Restaurante aberto</div>
+              <div class="p-status-sub">IA atendendo no WhatsApp</div>
+            </div>
+            <div class="p-status-icon">🟢</div>
+          </div>
+        </div>
+
+        <div class="p-card" id="pcard1">
+          <div class="p-card-titulo">Ultimos pedidos</div>
+          <div class="p-pedido">
+            <div>
+              <div class="p-pedido-nome">Maria Silva</div>
+              <div class="p-pedido-det">Marmita G Frango + Suco<br>Entrega • Pix</div>
+              <div class="p-badge p-badge-wpp">WhatsApp</div>
+            </div>
+            <div>
+              <div class="p-pedido-val">R$36</div>
+              <div class="p-pedido-hora">11:52</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-card" id="pcard2">
+          <div class="p-pedido">
+            <div>
+              <div class="p-pedido-nome">Carlos Souza</div>
+              <div class="p-pedido-det">Marmita M Carne + Agua<br>Retirada • Dinheiro</div>
+              <div class="p-badge p-badge-balcao">Balcao</div>
+            </div>
+            <div>
+              <div class="p-pedido-val">R$29</div>
+              <div class="p-pedido-hora">11:38</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-card" id="pcard3">
+          <div class="p-pedido">
+            <div>
+              <div class="p-pedido-nome">Ana Lima</div>
+              <div class="p-pedido-det">Marmita P Peixe<br>Entrega • Pix</div>
+              <div class="p-badge p-badge-wpp">WhatsApp</div>
+            </div>
+            <div>
+              <div class="p-pedido-val">R$22</div>
+              <div class="p-pedido-hora">11:25</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="panel-nav">
+        <div class="pn-item ativo"><span class="pn-icon">📋</span>Pedido</div>
+        <div class="pn-item"><span class="pn-icon">📊</span>Movimento</div>
+        <div class="pn-item"><span class="pn-icon">📈</span>Relatorio</div>
+        <div class="pn-item"><span class="pn-icon">🔴</span>Status</div>
+        <div class="pn-item"><span class="pn-icon">⚙️</span>Config</div>
+      </div>
+    </div>
+  </div>
+  <div class="panel-caption" id="panelCaption"></div>
+</div>
+
+<!-- ===== CENA 5: TICKET ===== -->
+<div class="scene" id="scene-ticket">
+  <div class="ticket-eyebrow" id="ticketEyebrow">Impressao automatica</div>
+  <div class="printer-wrap" id="printerWrap">
+    <div class="printer-body">
+      <div class="printer-brand">Elgin i9</div>
+      <div class="printer-slot"></div>
+      <div class="printer-leds">
+        <div class="printer-led" id="printerLed"></div>
+        <div class="printer-led amber" id="printerLed2"></div>
+      </div>
+    </div>
+    <div class="printer-paper-wrap" id="printerPaper">
+      <div class="ticket-content">
+        <div class="t-rest">★ MARMITARIA TIM ★</div>
+        <div class="t-pedido-num">PEDIDO #0048 — 11h52</div>
+        <div class="t-lbl">CLIENTE</div>
+        <div class="t-caixa">MARIA SILVA</div>
+        <div class="t-lbl">ENTREGA</div>
+        <div class="t-caixa">30-40 MIN</div>
+        <hr class="t-div">
+        <div class="t-row"><span>1x Marmita G Frango</span><span>R$28</span></div>
+        <div class="t-row"><span>1x Suco de Laranja</span><span>R$8</span></div>
+        <hr class="t-div">
+        <div class="t-row t-total"><span>TOTAL</span><span>R$36,00</span></div>
+        <div class="t-row" style="font-size:9px;margin-top:3px;color:#555;"><span>Pix confirmado ✓</span></div>
+        <div style="font-size:9px;color:#555;margin-top:2px;">Rua das Flores, 142 — Apto 3</div>
+        <div class="t-footer-ticket">Tim Automacoes • Impresso automaticamente</div>
+      </div>
+    </div>
+  </div>
+  <div class="ticket-caption" id="ticketCaption">
+    <strong>Pronto para a cozinha</strong>
+    <span>Ticket impresso automaticamente assim que o pedido chega — sem tocar no celular, sem anotar.</span>
+  </div>
+</div>
+
+<!-- ===== CENA 6: FINAL ===== -->
+<div class="scene" id="scene-final">
+  <div class="final-bg"></div>
+  <div class="final-content">
+    <div class="final-icon" id="finalIcon">🍱</div>
+    <div class="final-title" id="finalTitle">
+      ZERO<br>
+      <span class="laranja">TRABALHO</span><br>
+      <span class="dim">MANUAL</span>
+    </div>
+    <div class="final-sub" id="finalSub">
+      WhatsApp atendido. Pedido registrado. Ticket impresso. Tudo automatico — o dono cuida do que importa.
+    </div>
+    <div class="final-pills" id="finalPills">
+      <div class="pill pill-orange">R$ 297/mês</div>
+      <div class="pill pill-outline">Implantação completa</div>
+      <div class="pill pill-outline">Suporte incluso</div>
+      <div class="pill pill-outline">Meta API oficial</div>
+    </div>
+    <div class="final-cta" id="finalCta">
+      <button class="btn-restart" onclick="restart()">▶ Ver novamente</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+const SCENES = ['scene-intro','scene-problem','scene-chat','scene-panel','scene-ticket','scene-final'];
+let current = 0;
+let timers = [];
+
+function t(fn, delay){ const id = setTimeout(fn, delay); timers.push(id); return id; }
+function clearAll(){ timers.forEach(clearTimeout); timers = []; }
+
+function setProgress(pct){
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+function updateDots(idx){
+  document.querySelectorAll('.dot').forEach((d,i) => {
+    d.classList.toggle('active', i === idx);
+  });
+}
+
+function goToScene(idx){
+  if(idx === current && idx !== 0) return;
+  clearAll();
+  document.getElementById(SCENES[current]).classList.remove('active');
+  current = idx;
+  document.getElementById(SCENES[current]).classList.add('active');
+  updateDots(current);
+  const pcts = [0,18,38,60,80,100];
+  setProgress(pcts[current]);
+  if(current === 1) startProblem();
+  if(current === 2) startChat();
+  if(current === 3) startPanel();
+  if(current === 4) startTicket();
+  if(current === 5) startFinal();
+}
+
+function next(){ if(current < SCENES.length-1) goToScene(current+1); }
+function restart(){ goToScene(0); t(()=>goToScene(1), 3500); }
+
+// ===== CENA 1: INTRO =====
+window.addEventListener('load', ()=>{
+  t(()=>next(), 4200);
+});
+
+// ===== CENA 2: PROBLEMA =====
+function startProblem(){
+  const eyebrow = document.getElementById('p-eyebrow');
+  const title = document.getElementById('p-title');
+  const cards = ['pc1','pc2','pc3'];
+
+  eyebrow.style.opacity=0;
+  title.style.opacity=0; title.style.transform='translateY(12px)';
+  cards.forEach(id=>{ const el=document.getElementById(id); el.style.opacity=0; el.style.transform='translateX(-16px)'; });
+
+  t(()=>{ eyebrow.style.transition='opacity 0.6s ease'; eyebrow.style.opacity=1; }, 200);
+  t(()=>{ title.style.transition='all 0.7s ease'; title.style.opacity=1; title.style.transform='translateY(0)'; }, 500);
+  cards.forEach((id,i)=>{
+    t(()=>{
+      const el=document.getElementById(id);
+      el.style.transition='all 0.5s ease';
+      el.style.opacity=1;
+      el.style.transform='translateX(0)';
+    }, 900 + i*380);
+  });
+  t(()=>next(), 5800);
+}
+
+// ===== CENA 3: CHAT =====
+const chatData = [
+  { de:'cliente', txt:'Oi, quero fazer um pedido', hora:'11:45', caption:'<strong>Cliente manda mensagem</strong> — no numero de sempre' },
+  { de:'bot', txt:'Boa tarde! Bem-vindo a Marmitaria Tim.\n\nHoje temos:\n- Frango grelhado\n- Carne assada\n- Peixe ao molho\n\nTamanhos: P R$22 · M R$25 · G R$28\n\nQual vai ser?', hora:'11:45', caption:'<strong>IA responde em 2 segundos</strong> — com o cardapio do dia' },
+  { de:'cliente', txt:'Uma G de frango com suco de laranja', hora:'11:46', caption:'<strong>Pedido em linguagem natural</strong> — sem menu, sem numeros' },
+  { de:'bot', txt:'Anotado!\n- 1x Marmita G Frango — R$28\n- 1x Suco Laranja — R$8\nTotal: R$36\n\nEntrega ou retirada?', hora:'11:46', caption:'<strong>Sistema entendeu e calculou</strong> — sem erro' },
+  { de:'cliente', txt:'Entrega. Rua das Flores, 142, apto 3', hora:'11:47', caption:'<strong>Endereco coletado</strong> — automaticamente' },
+  { de:'bot', txt:'Forma de pagamento?\n- Pix\n- Dinheiro\n- Cartao na entrega', hora:'11:47', caption:'<strong>IA pergunta tudo</strong> — sem voce precisar fazer nada' },
+  { de:'cliente', txt:'Pix', hora:'11:52', caption:'' },
+  { de:'bot', txt:'PEDIDO CONFIRMADO!\n\nMarmita G Frango + Suco\nTotal: R$36 — Pix\nEntrega: Rua das Flores, 142\nPrevisao: 30-40 min\n\nObrigada, Maria!', hora:'11:52', caption:'<strong>Confirmado!</strong> — voce nao tocou no celular' },
+];
+
+function startChat(){
+  const phone = document.getElementById('phone');
+  const eyebrow = document.getElementById('chatEyebrow');
+  const caption = document.getElementById('chatCaption');
+  const msgs = document.getElementById('msgs');
+  const typing = document.getElementById('typing');
+
+  phone.classList.remove('visible');
+  eyebrow.style.opacity=0;
+  eyebrow.style.transition='opacity 0.6s ease';
+  msgs.innerHTML='';
+  msgs.appendChild(typing);
+  typing.classList.remove('show');
+  caption.classList.remove('show');
+
+  t(()=>{ eyebrow.style.opacity=1; phone.classList.add('visible'); }, 300);
+
+  let delay = 1000;
+  chatData.forEach((m)=>{
+    const isBot = m.de==='bot';
+    if(isBot){
+      t(()=>typing.classList.add('show'), delay);
+      delay += 1600;
+      t(()=>typing.classList.remove('show'), delay);
+    }
+    t(()=>{
+      const el = document.createElement('div');
+      el.className = 'msg ' + (m.de==='cliente' ? 'cliente' : 'bot');
+      el.innerHTML = m.txt.replace(/\n/g,'<br>') + `<span class="msg-time">${m.hora}</span>`;
+      msgs.insertBefore(el, typing);
+      requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('show')));
+      msgs.scrollTop = msgs.scrollHeight;
+      if(m.caption){
+        caption.innerHTML = m.caption;
+        caption.classList.add('show');
+      }
+    }, delay);
+    delay += isBot ? 1100 : 800;
+  });
+
+  t(()=>{ caption.classList.remove('show'); t(()=>next(), 500); }, delay+300);
+}
+
+// ===== CENA 4: PAINEL =====
+function startPanel(){
+  const phonePanel = document.getElementById('phonePanel');
+  const eyebrow = document.getElementById('panelEyebrow');
+  const caption = document.getElementById('panelCaption');
+  const cards = ['pcard-status','pcard1','pcard2','pcard3'];
+
+  phonePanel.classList.remove('visible');
+  eyebrow.style.opacity=0;
+  eyebrow.style.transition='opacity 0.6s ease';
+  caption.classList.remove('show');
+  cards.forEach(id=>{ const el=document.getElementById(id); el.classList.remove('show'); });
+
+  document.getElementById('panelCount').textContent='0';
+  document.getElementById('panelTotal').textContent='R$0';
+  document.getElementById('st1').textContent='0';
+  document.getElementById('st2').textContent='0';
+  document.getElementById('st3').textContent='R$0';
+
+  t(()=>{ eyebrow.style.opacity=1; phonePanel.classList.add('visible'); }, 300);
+
+  // Anima stats
+  t(()=>animateNum('panelCount', 0, 3, 800), 900);
+  t(()=>animateNum2('panelTotal', 0, 87, 800, 'R$'), 900);
+  t(()=>animateNum('st1', 0, 2, 700), 900);
+  t(()=>animateNum('st2', 0, 1, 700), 900);
+  t(()=>animateNum2('st3', 0, 29, 700, 'R$'), 900);
+
+  cards.forEach((id,i)=>{
+    t(()=>document.getElementById(id).classList.add('show'), 1000 + i*300);
+  });
+
+  t(()=>{
+    caption.innerHTML='<strong>Pedidos unificados</strong> — WhatsApp e balcao na mesma tela, em tempo real.';
+    caption.classList.add('show');
+  }, 2800);
+
+  t(()=>next(), 6000);
+}
+
+function animateNum(id, from, to, duration){
+  const el = document.getElementById(id);
+  const start = performance.now();
+  function step(now){
+    const progress = Math.min((now-start)/duration, 1);
+    el.textContent = Math.round(from + (to-from)*progress);
+    if(progress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+function animateNum2(id, from, to, duration, prefix=''){
+  const el = document.getElementById(id);
+  const start = performance.now();
+  function step(now){
+    const progress = Math.min((now-start)/duration, 1);
+    el.textContent = prefix + Math.round(from + (to-from)*progress);
+    if(progress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+// ===== CENA 5: TICKET =====
+function startTicket(){
+  const wrap = document.getElementById('printerWrap');
+  const paper = document.getElementById('printerPaper');
+  const led = document.getElementById('printerLed');
+  const led2 = document.getElementById('printerLed2');
+  const eyebrow = document.getElementById('ticketEyebrow');
+  const caption = document.getElementById('ticketCaption');
+
+  wrap.classList.remove('visible');
+  paper.classList.remove('printing');
+  led.classList.remove('on');
+  led2.classList.remove('on');
+  eyebrow.style.opacity=0;
+  eyebrow.style.transition='opacity 0.6s ease';
+  caption.classList.remove('show');
+
+  t(()=>{ eyebrow.style.opacity=1; wrap.classList.add('visible'); }, 400);
+  t(()=>{ led2.classList.add('on'); }, 1100);
+  t(()=>{ led.classList.add('on'); }, 1400);
+  t(()=>{ paper.classList.add('printing'); }, 1600);
+  t(()=>{ caption.classList.add('show'); }, 3200);
+  t(()=>next(), 6500);
+}
+
+// ===== CENA 6: FINAL =====
+function startFinal(){
+  document.getElementById('skipBtn').style.display='none';
+  const els = [
+    {id:'finalIcon', cls:'show'},
+    {id:'finalTitle', cls:'show'},
+    {id:'finalSub', cls:'show'},
+    {id:'finalPills', cls:'show'},
+    {id:'finalCta', cls:'show'},
+  ];
+  els.forEach(e=>{
+    const el=document.getElementById(e.id);
+    el.classList.remove(e.cls);
+  });
+  els.forEach((e,i)=>{
+    t(()=>document.getElementById(e.id).classList.add(e.cls), 300 + i*250);
+  });
+}
+</script>
+</body>
+</html>
